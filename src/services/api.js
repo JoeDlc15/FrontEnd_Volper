@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// agregando url para que funcione en render
 
 export const getProducts = async () => {
     try {
