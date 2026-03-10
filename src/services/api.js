@@ -1,6 +1,4 @@
-//const API_BASE_URL = 'http://localhost:3000/api';
-//const API_BASE_URL = 'https://bitter-zebras-think.loca.lt/api';
-const API_BASE_URL = 'https://backend-volper.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const getProducts = async () => {
     try {
