@@ -94,7 +94,7 @@ const CartDrawer = () => {
                                                             onClick={() => removeFromCart(product.sku)}
                                                             className="flex items-center gap-1 text-xs font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest transition-colors"
                                                         >
-                                                            <Trash2 size={14} /> Eliminar
+                                                            <Trash2 size={18} />
                                                         </button>
                                                     </div>
                                                 </div>

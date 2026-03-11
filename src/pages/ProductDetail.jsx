@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ChevronRight, Plus, Minus, ShoppingCart, ShieldCheck, Truck, ChevronLeft, Loader2 } from 'lucide-react';
+import { Star, ChevronRight, Plus, Minus, ShoppingCart, ShoppingBasket, ShieldCheck, Truck, ChevronLeft, Loader2, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { getProductById, registerProductView } from '../services/api';
 
 const ProductDetail = () => {
     const { id } = useParams();
-    const { addToCart } = useCart();
-    const [quantity, setQuantity] = useState(1);
+    const { cart, addToCart, openDrawer } = useCart();
+    const [rowQuantities, setRowQuantities] = useState({});
+    const [cartModal, setCartModal] = useState({ isOpen: false, variant: null, qtyToAdd: 0 });
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedVariant, setSelectedVariant] = useState(null);
@@ -80,19 +81,42 @@ const ProductDetail = () => {
         fetchProduct();
     }, [id]);
 
-    const handleAddToCart = () => {
-        if (product && selectedVariant) {
-            const variantDetails = selectedVariant.dimensions
-                .map(d => `${d.dimensionName}: ${d.dimensionValue}`)
-                .join(', ');
+    // Check if a variant SKU is already in the cart
+    const getCartItem = (sku) => cart.find(item => item.sku === sku);
 
-            addToCart({
-                ...product,
-                name: selectedVariant.name || product.name,
-                sku: selectedVariant.sku,
-                variantDetails: `Material: ${selectedVariant.material || 'Estándar'} | ${variantDetails}`,
-                quantity
-            });
+    // Get/set quantity for a specific row
+    const getRowQuantity = (sku) => rowQuantities[sku] || 0;
+    const setRowQuantity = (sku, qty) => {
+        setRowQuantities(prev => ({ ...prev, [sku]: Math.max(0, qty) }));
+    };
+
+    const confirmAddToCart = (variant, qty) => {
+        const variantDetails = variant.dimensions
+            .map(d => `${d.dimensionName}: ${d.dimensionValue}`)
+            .join(', ');
+
+        addToCart({
+            ...product,
+            name: variant.name || product.name,
+            sku: variant.sku,
+            variantDetails: `Material: ${variant.material || 'Estándar'} | ${variantDetails}`,
+            quantity: qty
+        });
+
+        setCartModal({ isOpen: false, variant: null, qtyToAdd: 0 });
+        setRowQuantity(variant.sku, 0); // Reset local row quantity
+    };
+
+    const handleInlineAddToCart = (variant, e) => {
+        e.stopPropagation();
+        const qty = getRowQuantity(variant.sku);
+        if (product && variant.stock > 0 && qty > 0) {
+            const inCart = getCartItem(variant.sku);
+            if (inCart) {
+                setCartModal({ isOpen: true, variant, qtyToAdd: qty });
+                return;
+            }
+            confirmAddToCart(variant, qty);
         }
     };
 
@@ -172,38 +196,10 @@ const ProductDetail = () => {
                             {product.description}
                         </p>
 
-                        <div className="border-y border-slate-100 dark:border-slate-900 py-10 mb-10">
-                            <div className="flex flex-col sm:flex-row items-center gap-6">
-                                <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-2xl h-16 bg-slate-50 dark:bg-slate-900 w-full sm:w-auto">
-                                    <button
-                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="px-6 text-slate-500 hover:text-primary transition-colors h-full"
-                                    >
-                                        <Minus size={20} />
-                                    </button>
-                                    <span className="w-16 text-center font-bold text-xl dark:text-white">
-                                        {quantity}
-                                    </span>
-                                    <button
-                                        onClick={() => setQuantity(quantity + 1)}
-                                        className="px-6 text-slate-500 hover:text-primary transition-colors h-full"
-                                    >
-                                        <Plus size={20} />
-                                    </button>
-                                </div>
-
-                                <button
-                                    onClick={handleAddToCart}
-                                    disabled={!selectedVariant}
-                                    className={`flex-1 w-full h-16 rounded-2xl font-black text-base tracking-widest flex items-center justify-center gap-3 transition-all ${selectedVariant
-                                        ? 'bg-primary text-slate-950 uppercase hover:brightness-110 active:scale-95 shadow-xl shadow-primary/20 cursor-pointer'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700'
-                                        }`}
-                                >
-                                    <ShoppingCart size={20} />
-                                    {selectedVariant ? 'Añadir al Carrito' : 'Selecciona un Modelo'}
-                                </button>
-                            </div>
+                        <div className="border-y border-slate-100 dark:border-slate-900 py-6 mb-10">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                                Selecciona la cantidad y presiona el botón <ShoppingCart size={14} className="inline text-primary" /> en la tabla para añadir al carrito.
+                            </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
@@ -268,38 +264,85 @@ const ProductDetail = () => {
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                                    <th className="px-8 py-5 text-sm font-black uppercase text-primary tracking-wider">SKU / Modelo</th>
-                                    <th className="px-8 py-5 text-sm font-black uppercase text-slate-500 tracking-wider">Nombre Pieza</th>
-                                    <th className="px-8 py-5 text-sm font-black uppercase text-slate-500 tracking-wider">Dimensiones</th>
-                                    <th className="px-8 py-5 text-sm font-black uppercase text-slate-500 tracking-wider">Estado</th>
+                                    <th className="px-6 py-5 text-sm font-black uppercase text-primary tracking-wider">SKU / Modelo</th>
+                                    <th className="px-6 py-5 text-sm font-black uppercase text-slate-500 tracking-wider">Nombre Pieza</th>
+                                    <th className="px-6 py-5 text-sm font-black uppercase text-slate-500 tracking-wider">Estado</th>
+                                    <th className="px-6 py-5 text-sm font-black uppercase text-primary tracking-wider text-center">Cantidad</th>
+                                    <th className="px-6 py-5 text-sm font-black uppercase text-primary tracking-wider text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-900 bg-white dark:bg-slate-950">
-                                {filteredVariants.map((v) => (
-                                    <tr
-                                        key={v.sku}
-                                        onClick={() => v.stock > 0 && setSelectedVariant({ ...v, material: product.measures.find(m => m.code === v.sku)?.material || v.material })}
-                                        className={`transition-colors cursor-pointer group hover:bg-primary/5 ${selectedVariant?.sku === v.sku ? 'bg-primary/10 border-l-4 border-l-primary' : ''} ${v.stock <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    >
-                                        <td className="px-8 py-5 font-mono text-sm font-bold text-primary">{v.sku}</td>
-                                        <td className="px-8 py-5 text-sm text-slate-700 dark:text-slate-300 font-semibold">{v.name || product.name}</td>
-                                        <td className="px-8 py-5 text-sm text-slate-600 dark:text-slate-400 font-medium">
-                                            <div className="flex flex-wrap gap-x-4 gap-y-1">
-                                                {v.dimensions.map(d => (
-                                                    <span key={d.id} className="inline-flex items-center">
-                                                        <span className="text-[10px] font-black uppercase text-slate-400 mr-2">{d.dimensionName}:</span>
-                                                        <span className="font-bold text-slate-700 dark:text-slate-200">{d.dimensionValue}</span>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${v.stock > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
-                                                {v.stock > 0 ? 'Disponible' : 'Sin Stock'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {filteredVariants.map((v) => {
+                                    const inCart = getCartItem(v.sku);
+                                    return (
+                                        <tr
+                                            key={v.sku}
+                                            className={`transition-colors group hover:bg-primary/5 
+                                            ${inCart ? 'bg-amber-50 dark:bg-amber-900/10 border-l-4 border-l-amber-400' : ''}
+                                            ${v.stock <= 0 ? 'opacity-50' : ''}`}
+                                        >
+                                            <td className="px-6 py-4 font-mono text-sm font-bold text-primary">
+                                                <div className="flex items-center gap-2">
+                                                    {v.sku}
+                                                    {inCart && (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black">
+                                                            <ShoppingCart size={10} />
+                                                            {inCart.quantity}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 font-semibold">{v.name || product.name}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${v.stock > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
+                                                    {v.stock > 0 ? 'Disponible' : 'Sin Stock'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-center">
+                                                    <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900 h-10">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setRowQuantity(v.sku, getRowQuantity(v.sku) - 1); }}
+                                                            className="px-2.5 text-slate-400 hover:text-primary transition-colors h-full"
+                                                            disabled={v.stock <= 0}
+                                                        >
+                                                            <Minus size={14} />
+                                                        </button>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={getRowQuantity(v.sku)}
+                                                            onChange={(e) => { e.stopPropagation(); setRowQuantity(v.sku, parseInt(e.target.value) || 0); }}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="w-10 text-center font-bold text-sm dark:text-white bg-transparent outline-none appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                            disabled={v.stock <= 0}
+                                                        />
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setRowQuantity(v.sku, getRowQuantity(v.sku) + 1); }}
+                                                            className="px-2.5 text-slate-400 hover:text-primary transition-colors h-full"
+                                                            disabled={v.stock <= 0}
+                                                        >
+                                                            <Plus size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <button
+                                                    onClick={(e) => handleInlineAddToCart(v, e)}
+                                                    disabled={v.stock <= 0 || getRowQuantity(v.sku) <= 0}
+                                                    className={`inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all ${v.stock > 0 && getRowQuantity(v.sku) > 0
+                                                        ? 'bg-primary text-white hover:brightness-110 active:scale-90 shadow-md shadow-primary/20 cursor-pointer'
+                                                        : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                                                        }`}
+                                                    title={inCart ? `Ya tienes ${inCart.quantity} en el carrito` : 'Añadir al carrito'}
+                                                >
+                                                    <ShoppingCart size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -313,6 +356,61 @@ const ProductDetail = () => {
                     <ChevronLeft size={20} /> Volver al Catálogo
                 </Link>
             </main>
+
+            {/* Custom Modal para Producto ya en el carrito */}
+            {cartModal.isOpen && cartModal.variant && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setCartModal({ isOpen: false, variant: null, qtyToAdd: 0 })}
+                            className="absolute right-6 top-6 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+                                <ShoppingBasket size={32} strokeWidth={2.5} />
+                            </div>
+
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+                                Producto ya en la lista
+                            </h3>
+
+                            <p className="text-slate-500 dark:text-slate-400 text-[15px] leading-relaxed mb-8">
+                                Este producto ya se encuentra en tu lista de cotización.<br className="hidden sm:block" />
+                                ¿Deseas añadir <span className="font-bold text-slate-700 dark:text-slate-300">{cartModal.qtyToAdd}</span> unidades más o mantener la cantidad actual de <span className="font-bold text-slate-700 dark:text-slate-300">{getCartItem(cartModal.variant.sku)?.quantity}</span>?
+                            </p>
+
+                            <div className="flex flex-col gap-3 w-full">
+                                <button
+                                    onClick={() => confirmAddToCart(cartModal.variant, cartModal.qtyToAdd)}
+                                    className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                                >
+                                    <Plus size={20} strokeWidth={3} /> Añadir más unidades
+                                </button>
+
+                                <button
+                                    onClick={() => setCartModal({ isOpen: false, variant: null, qtyToAdd: 0 })}
+                                    className="w-full h-14 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-2xl transition-colors active:scale-[0.98]"
+                                >
+                                    Mantener igual
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setCartModal({ isOpen: false, variant: null, qtyToAdd: 0 });
+                                    openDrawer();
+                                }}
+                                className="mt-8 text-sm font-semibold text-slate-400 hover:text-emerald-500 transition-colors border-b border-transparent hover:border-emerald-500 pb-0.5"
+                            >
+                                Ver mi lista actual
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
