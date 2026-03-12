@@ -70,3 +70,39 @@ export const registerProductView = async (id) => {
         return null;
     }
 };
+
+export const getAdminQuotations = async () => {
+    try {
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch(`${API_BASE_URL}/admin/cotizaciones`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'vscode-browser-req': 'true',
+                'Bypass-Tunnel-Reminder': 'true'
+            }
+        });
+        if (!response.ok) throw new Error('Error al obtener cotizaciones');
+        return await response.json();
+    } catch (error) {
+        console.error('API Error:', error);
+        return [];
+    }
+};
+
+export const getAdminQuotationById = async (id) => {
+    try {
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch(`${API_BASE_URL}/admin/cotizaciones/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'vscode-browser-req': 'true',
+                'Bypass-Tunnel-Reminder': 'true'
+            }
+        });
+        if (!response.ok) throw new Error('Error al obtener la cotización');
+        return await response.json();
+    } catch (error) {
+        console.error('API Error:', error);
+        return null;
+    }
+};

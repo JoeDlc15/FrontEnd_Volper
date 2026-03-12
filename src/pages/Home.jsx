@@ -9,19 +9,19 @@ const Home = () => {
         {
             title: 'Conexiones de Bronce',
             description: 'Uniones de cañería armada en pulgadas y milimétricas. Calidad premium para alta presión.',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbwaerOhHPAjDhpGazASv6BUITIjCMGACju9gOv89qWgS0vskjnnhIPVLxUKO4ftDHAr9RcQRf5ZPFgMq8Fj5ztfSZdxUP6FqH-FmjyWZy117WOTx-QuXyXwYbAlCAv3u7353p2uw5__TfTum_B5Wgl-jw761FK7rFdTcuok-sEN26es2QPH-mJhqg-qpzO8dT-NYBM_tUAzfrRaqtdjnVvN8_PCAqBrogEOjeQKTWcOEIGH71aZZOGUn7eKPphubXKhjzGEkkNxQ',
+            image: 'https://res.cloudinary.com/dpn43zprq/image/upload/v1771414198/ConexionesBronce_sd33p1.jpg',
             brand: 'Industrias Volper'
         },
         {
             title: 'Empaquetaduras',
             description: 'Kits de juntas para compresoras y sistemas neumáticos de transporte pesado.',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuASn0wNvM1xCPxMagm9UklKYlNnusvz9XhwSZGdyPBQYVglayuYa-v7NYBAfIYEBpm5oRMm_59c8___shCKIgxZjQ0Yd5TFml8X9xnENFIaCVBhUK_6nNnLR7i0NXDw07zq7-vbsngmpMNH3OUDgcPFIYjI5gtWJ-TobRfrfuy3rEKlDlv9dOLNcAf1mnLzPBmUbPAeq-m2oSzs914zjgrKrqclQnUA2PxynZ97vdkRfaDZRdI_mZ6-PTBaQt08rZgRDQWGzX3f9eo',
+            image: 'https://res.cloudinary.com/dpn43zprq/image/upload/v1771416310/Empaquetaduras_bt6jvp.jpg',
             brand: 'Volper Seal'
         },
         {
             title: 'Bombas de Inyección',
             description: 'Sellos y componentes especializados para sistemas de inyección diesel de alta demanda.',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYF_m-Xm-9X4Z-_4_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8_8', // Fallback icon in design
+            image: 'https://res.cloudinary.com/dpn43zprq/image/upload/v1771414368/Arandelas_Aluminio_g8zobd.jpg', // Fallback icon in design
             brand: 'Precisión Volper',
             isIcon: true
         }
