@@ -60,7 +60,7 @@ const ProductCard = ({ product }) => {
                         to={`/producto/${product.id}`}
                         className="w-full bg-primary/80 dark:bg-primary/80 py-2 md:py-3 block text-center rounded-lg md:rounded-xl text-white font-bold hover:bg-[#16a34a] transition-all font-display uppercase tracking-wider text-[10px] md:text-[12px] shadow-sm"
                     >
-                        Ver Opciones
+                        Ver Medidas
                     </Link>
                 </div>
             </div>

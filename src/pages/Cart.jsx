@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import CartItem from '../components/CartItem';
 import { ShoppingBag, ArrowRight, Send, Briefcase, Mail, Phone, User, FileText, ChevronRight, Plus, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { createQuote } from '../services/api';
 
 const Cart = () => {
     const { cart, cartCount, clearCart } = useCart();
+    const { user } = useAuth();
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -15,6 +17,19 @@ const Cart = () => {
         phone: '',
         email: ''
     });
+
+    // Auto-fill form when user data is available
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                company: user.company || prev.company,
+                contact: user.name || prev.contact,
+                phone: user.phone || prev.phone,
+                email: user.email || prev.email
+            }));
+        }
+    }, [user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
