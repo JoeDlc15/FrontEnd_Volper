@@ -6,13 +6,13 @@ const QuotesHistory = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
     useEffect(() => {
         const fetchQuotes = async () => {
             try {
                 const token = localStorage.getItem('customerToken');
-                const response = await fetch(`${backendUrl}/api/customer/quotes`, {
+                const response = await fetch(`${API_BASE_URL}/customer/quotes`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -33,7 +33,7 @@ const QuotesHistory = () => {
         };
 
         fetchQuotes();
-    }, [backendUrl]);
+    }, [API_BASE_URL]);
 
     const getStatusInfo = (status) => {
         switch (status?.toLowerCase()) {
