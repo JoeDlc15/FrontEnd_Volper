@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('customerToken'));
     const [loading, setLoading] = useState(true);
 
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
     const fetchProfile = async () => {
         if (!token) {
@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-            const response = await fetch(`${backendUrl}/api/customer/profile`, {
+            const response = await fetch(`${API_BASE_URL}/customer/profile`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -44,10 +44,10 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         fetchProfile();
-    }, [token, backendUrl]);
+    }, [token, API_BASE_URL]);
 
     const login = async (email, password) => {
-        const response = await fetch(`${backendUrl}/api/customer/login`, {
+        const response = await fetch(`${API_BASE_URL}/customer/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (name, email, password) => {
-        const response = await fetch(`${backendUrl}/api/customer/register`, {
+        const response = await fetch(`${API_BASE_URL}/customer/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password })

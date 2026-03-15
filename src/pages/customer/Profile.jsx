@@ -18,7 +18,7 @@ const Profile = () => {
     const [status, setStatus] = useState({ type: '', message: '' });
     const [loading, setLoading] = useState(false);
 
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,7 +43,7 @@ const Profile = () => {
 
         try {
             const token = localStorage.getItem('customerToken');
-            const response = await fetch(`${backendUrl}/api/customer/profile`, {
+            const response = await fetch(`${API_BASE_URL}/customer/profile`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
