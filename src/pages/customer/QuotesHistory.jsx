@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Calendar, List, Clock, CheckCircle, AlertCircle, ChevronRight, FileText } from 'lucide-react';
+import QuoteDetailModal from '../../components/customer/QuoteDetailModal';
 
 const QuotesHistory = () => {
     const [quotes, setQuotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -34,6 +37,11 @@ const QuotesHistory = () => {
 
         fetchQuotes();
     }, [API_BASE_URL]);
+
+    const openQuoteDetail = (id) => {
+        setSelectedQuoteId(id);
+        setIsModalOpen(true);
+    };
 
     const getStatusInfo = (status) => {
         switch (status?.toLowerCase()) {
@@ -124,7 +132,10 @@ const QuotesHistory = () => {
                                         <statusInfo.icon size={12} />
                                         {statusInfo.label}
                                     </div>
-                                    <button className="text-primary text-xs font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => openQuoteDetail(quote.id)}
+                                        className="text-primary text-xs font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
                                         Ver Detalles <ChevronRight size={14} />
                                     </button>
                                 </div>
@@ -133,6 +144,13 @@ const QuotesHistory = () => {
                     })}
                 </div>
             )}
+
+            {/* Modal de Detalle */}
+            <QuoteDetailModal
+                quoteId={selectedQuoteId}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 };
