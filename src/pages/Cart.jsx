@@ -5,12 +5,14 @@ import CartItem from '../components/CartItem';
 import { ShoppingBag, ArrowRight, Send, Briefcase, Mail, Phone, User, FileText, ChevronRight, Plus, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createQuote } from '../services/api';
+import AuthModal from '../components/AuthModal';
 
 const Cart = () => {
     const { cart, cartCount, clearCart } = useCart();
     const { user } = useAuth();
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         company: '',
         contact: '',
@@ -150,108 +152,126 @@ const Cart = () => {
 
                         {/* Quote Form */}
                         <div className="xl:col-span-1">
-                            <div className="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-10 shadow-2xl sticky top-24 border border-slate-800 text-white">
-                                <div className="flex items-center gap-4 mb-10">
-                                    <div className="bg-primary/20 p-3 rounded-2xl text-primary">
-                                        <FileText size={24} />
+                            {!user ? (
+                                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 shadow-2xl sticky top-24 border border-slate-200 dark:border-slate-800 text-center">
+                                    <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
+                                        <User size={32} />
                                     </div>
-                                    <div>
-                                        <h2 className="text-2xl font-bold font-display">Solicitar Cotización</h2>
-                                        <p className="text-slate-500 text-sm">Respuesta en menos de 4h</p>
-                                    </div>
-                                </div>
-
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Empresa</label>
-                                        <div className="relative">
-                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                            <input
-                                                required
-                                                type="text"
-                                                name="company"
-                                                value={formData.company}
-                                                onChange={handleInputChange}
-                                                placeholder="Nombre de la empresa"
-                                                className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-600"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Contacto</label>
-                                        <div className="relative">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                            <input
-                                                required
-                                                type="text"
-                                                name="contact"
-                                                value={formData.contact}
-                                                onChange={handleInputChange}
-                                                placeholder="Tu nombre completo"
-                                                className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-600"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Teléfono</label>
-                                            <input
-                                                required
-                                                type="tel"
-                                                name="phone"
-                                                value={formData.phone}
-                                                onChange={handleInputChange}
-                                                placeholder="N° Teléfono"
-                                                className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-600"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Correo</label>
-                                            <input
-                                                required
-                                                type="email"
-                                                name="email"
-                                                value={formData.email}
-                                                onChange={handleInputChange}
-                                                placeholder="Email corporativo"
-                                                className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-600"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-6">
-                                        <button
-                                            type="submit"
-                                            disabled={loading}
-                                            className="w-full bg-primary hover:bg-primary/90 text-slate-950 font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-primary/20 text-sm tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {loading ? (
-                                                <Loader2 className="animate-spin" size={20} />
-                                            ) : (
-                                                <>
-                                                    SOLICITAR PRESUPUESTO
-                                                    <ArrowRight size={18} />
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
-
-                                <div className="mt-8 flex items-start gap-3 p-4 bg-slate-800/30 rounded-2xl border border-slate-800/50">
-                                    <div className="size-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 text-primary">
-                                        <span className="font-bold text-xs">i</span>
-                                    </div>
-                                    <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-                                        Al solicitar presupuesto, autoriza a Volper Seal a procesar sus datos con fines exclusivamente comerciales ligados a su solicitud.
+                                    <h2 className="text-2xl font-bold mb-4 font-display text-slate-900 dark:text-white">Inicia Sesión para Cotizar</h2>
+                                    <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm leading-relaxed">
+                                        Para brindarte un mejor seguimiento y guardar tus cotizaciones, necesitas tener una cuenta en Volper Industrial.
                                     </p>
+                                    <button
+                                        onClick={() => setIsAuthModalOpen(true)}
+                                        className="w-full bg-primary hover:bg-primary/90 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-primary/20 text-sm tracking-widest uppercase"
+                                    >
+                                        INGRESAR O REGISTRARSE
+                                        <ArrowRight size={18} />
+                                    </button>
+
+                                    <div className="mt-8 flex items-center gap-2 justify-center text-xs text-slate-500 font-medium">
+                                        <div className="size-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                                        Tus productos se mantendrán guardados
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-4 shadow-2xl sticky top-24 border border-slate-200 dark:border-slate-800">
+                                    <div className="flex items-center gap-4 mb-6">
+                                        <div className="bg-primary/20 p-3 rounded-2xl text-primary">
+                                            <FileText size={24} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold font-display text-slate-900 dark:text-white">Solicitar Cotización</h2>
+                                            <p className="text-slate-500 text-sm">Respuesta en menos de 4h</p>
+                                        </div>
+                                    </div>
+
+                                    <form onSubmit={handleSubmit} className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 ml-1">Empresa</label>
+                                            <div className="relative">
+                                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    name="company"
+                                                    value={formData.company}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Nombre de la empresa"
+                                                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-900 dark:text-white"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 ml-1">Contacto</label>
+                                            <div className="relative">
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    name="contact"
+                                                    value={formData.contact}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Tu nombre completo"
+                                                    className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-900 dark:text-white"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 ml-1">Teléfono</label>
+                                                <div className="relative">
+                                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                                    <input
+                                                        required
+                                                        type="tel"
+                                                        name="phone"
+                                                        value={formData.phone}
+                                                        onChange={handleInputChange}
+                                                        placeholder="N° Teléfono"
+                                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl pl-12 pr-4 py-4 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-900 dark:text-white"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-3">
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="w-full bg-primary hover:bg-primary/90 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-primary/20 text-sm tracking-widest uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {loading ? (
+                                                    <Loader2 className="animate-spin" size={20} />
+                                                ) : (
+                                                    <>
+                                                        SOLICITAR PRESUPUESTO
+                                                        <ArrowRight size={18} />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <div className="mt-8 flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                                        <div className="size-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 text-primary">
+                                            <span className="font-bold text-xs">i</span>
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                                            Al solicitar presupuesto, autoriza a Volper Industrial a procesar sus datos con fines exclusivamente comerciales ligados a su solicitud.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
             </main>
+
+            {/* Modal de Autenticación */}
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
         </div>
     );
 };

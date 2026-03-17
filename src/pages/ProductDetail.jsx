@@ -182,12 +182,7 @@ const ProductDetail = () => {
                         <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">{product.name}</h1>
 
                         <div className="flex items-center gap-6 mb-8">
-                            <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 rounded-full">
-                                <span className="text-primary font-bold text-sm">{product.rating}</span>
-                                <div className="flex text-amber-500">
-                                    <Star size={14} fill="currentColor" />
-                                </div>
-                            </div>
+
                             <span className="text-slate-400 text-sm font-medium">SKU: {product.sku}</span>
                             <span className="text-slate-400 border-l border-slate-200 dark:border-slate-800 pl-6 text-sm">{viewCount} visualizaciones</span>
                         </div>
