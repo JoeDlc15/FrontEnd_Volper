@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Star, ChevronRight, Plus, Minus, ShoppingCart, ShoppingBasket, ShieldCheck, Truck, ChevronLeft, Loader2, X } from 'lucide-react';
+import { Star, ChevronRight, Plus, Minus, ShoppingCart, ShoppingBasket, ShieldCheck, Truck, ChevronLeft, Loader2, X, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { getProductById, registerProductView } from '../services/api';
 
@@ -15,6 +15,7 @@ const ProductDetail = () => {
     const [mainImage, setMainImage] = useState(null);
     const [viewCount, setViewCount] = useState(0);
     const [selectedMeasureType, setSelectedMeasureType] = useState('all');
+    const [measureSearch, setMeasureSearch] = useState('');
 
     // Compute unique measure types from product variants
     const measureTypes = useMemo(() => {
@@ -22,12 +23,27 @@ const ProductDetail = () => {
         return [...new Set(product.variants.map(v => v.measureType).filter(Boolean))];
     }, [product]);
 
-    // Filter variants based on selected measure type
+    // Filter variants based on selected measure type and search query
     const filteredVariants = useMemo(() => {
         if (!product?.variants) return [];
-        if (selectedMeasureType === 'all') return product.variants;
-        return product.variants.filter(v => v.measureType === selectedMeasureType);
-    }, [product, selectedMeasureType]);
+
+        // If there's a search term, prioritize it and ignore measure type unless empty
+        const searchFiltered = product.variants.filter(v => {
+            const searchLower = measureSearch.toLowerCase().trim();
+            if (!searchLower) return true;
+
+            // Search in SKU, name, and all dimensions
+            const matchSku = v.sku.toLowerCase().includes(searchLower);
+            const matchName = v.name?.toLowerCase().includes(searchLower);
+            const matchDims = v.dimensions?.some(d => d.dimensionValue.toLowerCase().includes(searchLower));
+
+            return matchSku || matchName || matchDims;
+        });
+
+        if (measureSearch.trim()) return searchFiltered;
+        if (selectedMeasureType === 'all') return searchFiltered;
+        return searchFiltered.filter(v => v.measureType === selectedMeasureType);
+    }, [product, selectedMeasureType, measureSearch]);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -224,36 +240,63 @@ const ProductDetail = () => {
                         </p>
                     </div>
 
-                    {/* MeasureType Filter Buttons */}
-                    {measureTypes.length > 1 && (
-                        <div className="flex flex-wrap items-center gap-2 mb-6">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2">Tipo de Medida:</span>
-                            <button
-                                onClick={() => setSelectedMeasureType('all')}
-                                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${selectedMeasureType === 'all'
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                    }`}
-                            >
-                                Todos ({product.variants?.length})
-                            </button>
-                            {measureTypes.map(type => {
-                                const count = product.variants?.filter(v => v.measureType === type).length;
-                                return (
-                                    <button
-                                        key={type}
-                                        onClick={() => setSelectedMeasureType(type)}
-                                        className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${selectedMeasureType === type
-                                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                            }`}
-                                    >
-                                        {type} ({count})
-                                    </button>
-                                );
-                            })}
+                    {/* MeasureType Filter Buttons & Search */}
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+                        {measureTypes.length > 1 && (
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mr-2">Tipo de Medida:</span>
+                                <button
+                                    onClick={() => {
+                                        setSelectedMeasureType('all');
+                                        setMeasureSearch('');
+                                    }}
+                                    className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${selectedMeasureType === 'all' && !measureSearch
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                        }`}
+                                >
+                                    Todos ({product.variants?.length})
+                                </button>
+                                {measureTypes.map(type => {
+                                    const count = product.variants?.filter(v => v.measureType === type).length;
+                                    return (
+                                        <button
+                                            key={type}
+                                            onClick={() => {
+                                                setSelectedMeasureType(type);
+                                                setMeasureSearch('');
+                                            }}
+                                            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${selectedMeasureType === type && !measureSearch
+                                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                                }`}
+                                        >
+                                            {type} ({count})
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        <div className="relative group min-w-[300px] md:ml-auto">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Buscador rápido de medida... (ej: 1/4)"
+                                value={measureSearch}
+                                onChange={(e) => setMeasureSearch(e.target.value)}
+                                className="w-full h-11 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-primary/20 rounded-2xl pl-12 pr-4 text-xs font-bold outline-none transition-all shadow-sm"
+                            />
+                            {measureSearch && (
+                                <button
+                                    onClick={() => setMeasureSearch('')}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                    <X size={14} />
+                                </button>
+                            )}
                         </div>
-                    )}
+                    </div>
 
                     <div className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <table className="w-full text-left">
