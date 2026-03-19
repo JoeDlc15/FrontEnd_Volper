@@ -1,7 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Mail, Phone, Briefcase, MapPin, User, Save, Edit2, X, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { updateCustomerProfile } from '../../services/api';
+
+const InfoField = ({ icon: Icon, label, value, name, type = "text", required = false, isEditing, formData, handleInputChange }) => (
+    <div className="flex flex-col gap-1">
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
+        <div className="relative group">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                <Icon size={18} />
+            </div>
+            <input
+                type={type}
+                name={name}
+                value={isEditing ? formData[name] : value || 'No especificado'}
+                onChange={handleInputChange}
+                readOnly={!isEditing}
+                required={required}
+                className={`w-full pl-12 pr-4 py-4 rounded-2xl text-sm font-medium transition-all outline-none border ${isEditing
+                    ? 'bg-white dark:bg-slate-800 border-primary shadow-lg shadow-primary/5 dark:border-primary/50 text-slate-900 dark:text-white'
+                    : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-600 dark:text-slate-300'
+                    }`}
+            />
+        </div>
+    </div>
+);
 
 const Profile = () => {
     const { user: initialUser } = useOutletContext();
@@ -17,8 +37,6 @@ const Profile = () => {
     });
     const [status, setStatus] = useState({ type: '', message: '' });
     const [loading, setLoading] = useState(false);
-
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -42,58 +60,19 @@ const Profile = () => {
         setStatus({ type: '', message: '' });
 
         try {
-            const token = localStorage.getItem('customerToken');
-            const response = await fetch(`${API_BASE_URL}/customer/profile`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            });
+            const data = await updateCustomerProfile(formData);
+            setUser(data);
+            setIsEditing(false);
+            setStatus({ type: 'success', message: 'Perfil actualizado correctamente.' });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                setUser(data);
-                setIsEditing(false);
-                setStatus({ type: 'success', message: 'Perfil actualizado correctamente.' });
-
-                // Refresh global context so Navbar and Sidebar name updates immediately
-                if (refreshProfile) refreshProfile();
-            } else {
-                setStatus({ type: 'error', message: data.error || 'Error al actualizar el perfil.' });
-            }
+            if (refreshProfile) refreshProfile();
         } catch (error) {
             console.error('Error updating profile:', error);
-            setStatus({ type: 'error', message: 'Error de conexión con el servidor.' });
+            setStatus({ type: 'error', message: error.message || 'Error al actualizar el perfil.' });
         } finally {
             setLoading(false);
         }
     };
-
-    const InfoField = ({ icon: Icon, label, value, name, type = "text", required = false }) => (
-        <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{label}</label>
-            <div className="relative group">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                    <Icon size={18} />
-                </div>
-                <input
-                    type={type}
-                    name={name}
-                    value={isEditing ? formData[name] : value || 'No especificado'}
-                    onChange={handleInputChange}
-                    readOnly={!isEditing}
-                    required={required}
-                    className={`w-full pl-12 pr-4 py-4 rounded-2xl text-sm font-medium transition-all outline-none border ${isEditing
-                        ? 'bg-white dark:bg-slate-800 border-primary shadow-lg shadow-primary/5 dark:border-primary/50 text-slate-900 dark:text-white'
-                        : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-600 dark:text-slate-300'
-                        }`}
-                />
-            </div>
-        </div>
-    );
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -135,12 +114,12 @@ const Profile = () => {
 
             <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <InfoField icon={User} label="Nombre Completo" value={user.name} name="name" required />
-                    <InfoField icon={Mail} label="Correo Electrónico" value={user.email} name="email" type="email" required />
-                    <InfoField icon={Phone} label="Teléfono" value={user.phone} name="phone" />
-                    <InfoField icon={Briefcase} label="Empresa" value={user.company} name="company" />
+                    <InfoField icon={User} label="Nombre Completo" value={user.name} name="name" required isEditing={isEditing} formData={formData} handleInputChange={handleInputChange} />
+                    <InfoField icon={Mail} label="Correo Electrónico" value={user.email} name="email" type="email" required isEditing={isEditing} formData={formData} handleInputChange={handleInputChange} />
+                    <InfoField icon={Phone} label="Teléfono" value={user.phone} name="phone" isEditing={isEditing} formData={formData} handleInputChange={handleInputChange} />
+                    <InfoField icon={Briefcase} label="Empresa" value={user.company} name="company" isEditing={isEditing} formData={formData} handleInputChange={handleInputChange} />
                     <div className="md:col-span-2">
-                        <InfoField icon={MapPin} label="Dirección / Sede Principal" value={user.address} name="address" />
+                        <InfoField icon={MapPin} label="Dirección / Sede Principal" value={user.address} name="address" isEditing={isEditing} formData={formData} handleInputChange={handleInputChange} />
                     </div>
                 </div>
 

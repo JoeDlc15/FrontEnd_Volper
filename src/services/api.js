@@ -106,3 +106,77 @@ export const getAdminQuotationById = async (id) => {
         return null;
     }
 };
+
+// --- CUSTOMER API ---
+
+export const updateCustomerProfile = async (formData) => {
+    try {
+        const token = localStorage.getItem('customerToken');
+        const response = await fetch(`${API_BASE_URL}/customer/profile`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Bypass-Tunnel-Reminder': 'true'
+            },
+            body: JSON.stringify(formData)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Error al actualizar perfil');
+        return data;
+    } catch (error) {
+        console.error('API Error (Profile):', error);
+        throw error;
+    }
+};
+
+export const getCustomerQuotes = async () => {
+    try {
+        const token = localStorage.getItem('customerToken');
+        const response = await fetch(`${API_BASE_URL}/customer/quotes`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Bypass-Tunnel-Reminder': 'true'
+            }
+        });
+        if (!response.ok) throw new Error('Error al obtener cotizaciones');
+        return await response.json();
+    } catch (error) {
+        console.error('API Error (Quotes):', error);
+        return [];
+    }
+};
+
+export const forgotPassword = async (email) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/customer/forgot-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Bypass-Tunnel-Reminder': 'true'
+            },
+            body: JSON.stringify({ email })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('API Error (Forgot):', error);
+        return { error: 'Error de conexión' };
+    }
+};
+
+export const resetPassword = async (token, password) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/customer/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Bypass-Tunnel-Reminder': 'true'
+            },
+            body: JSON.stringify({ token, password })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('API Error (Reset):', error);
+        return { error: 'Error de conexión' };
+    }
+};

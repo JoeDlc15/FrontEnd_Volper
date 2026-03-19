@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Calendar, List, Clock, CheckCircle, AlertCircle, ChevronRight, FileText } from 'lucide-react';
 import QuoteDetailModal from '../../components/customer/QuoteDetailModal';
+import { getCustomerQuotes } from '../../services/api';
 
 const QuotesHistory = () => {
     const [quotes, setQuotes] = useState([]);
@@ -9,24 +10,11 @@ const QuotesHistory = () => {
     const [selectedQuoteId, setSelectedQuoteId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
     useEffect(() => {
         const fetchQuotes = async () => {
             try {
-                const token = localStorage.getItem('customerToken');
-                const response = await fetch(`${API_BASE_URL}/customer/quotes`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setQuotes(data);
-                } else {
-                    setError('No se pudieron cargar tus cotizaciones.');
-                }
+                const data = await getCustomerQuotes();
+                setQuotes(data);
             } catch (err) {
                 console.error('Error fetching quotes:', err);
                 setError('Error de conexión con el servidor.');
@@ -36,7 +24,7 @@ const QuotesHistory = () => {
         };
 
         fetchQuotes();
-    }, [API_BASE_URL]);
+    }, []);
 
     const openQuoteDetail = (id) => {
         setSelectedQuoteId(id);

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { X, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AuthModal = ({ isOpen, onClose }) => {
     const { login, register, loading } = useAuth();
+    const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [error, setError] = useState('');
@@ -132,6 +134,20 @@ const AuthModal = ({ isOpen, onClose }) => {
                                     placeholder="••••••••"
                                 />
                             </div>
+                            {isLogin && (
+                                <div className="flex justify-end mt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            onClose();
+                                            navigate('/forgot-password');
+                                        }}
+                                        className="text-xs font-bold text-primary hover:underline transition-all"
+                                    >
+                                        ¿Olvidaste tu contraseña?
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <button

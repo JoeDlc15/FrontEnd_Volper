@@ -10,6 +10,8 @@ import Cart from './pages/Cart';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Solutions from './pages/Solutions';
+import ForgotPassword from './pages/customer/ForgotPassword';
+import ResetPassword from './pages/customer/ResetPassword';
 import CustomerDashboardLayout from './pages/customer/CustomerDashboardLayout';
 import Profile from './pages/customer/Profile';
 import QuotesHistory from './pages/customer/QuotesHistory';
@@ -33,6 +35,8 @@ function App() {
                     <Route path="/nosotros" element={<About />} />
                     <Route path="/contacto" element={<Contact />} />
                     <Route path="/soluciones" element={<Solutions />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password/:token" element={<ResetPassword />} />
 
                     {/* Panel de Cliente */}
                     <Route path="/mi-cuenta" element={<CustomerDashboardLayout />}>
