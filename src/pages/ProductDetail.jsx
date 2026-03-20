@@ -84,6 +84,8 @@ const ProductDetail = () => {
             ...product,
             name: variant.name || product.name,
             sku: variant.sku,
+            price: parseFloat(variant.price) || 0,
+            image: mainImage || (product.images && product.images[0]?.url) || '',
             variantDetails: `Material: ${variant.material || 'Estándar'} | ${variantDetails}`,
             quantity: qty
         });
@@ -103,6 +105,34 @@ const ProductDetail = () => {
             }
             confirmAddToCart(variant, qty);
         }
+    };
+
+    const handleBulkAddToCart = () => {
+        const variantsWithQty = product.variants.filter(v => rowQuantities[v.sku] > 0 && v.stock > 0);
+
+        if (variantsWithQty.length === 0) return;
+
+        variantsWithQty.forEach(variant => {
+            const qty = rowQuantities[variant.sku];
+            const variantDetails = variant.dimensions
+                .map(d => `${d.dimensionName}: ${d.dimensionValue}`)
+                .join(', ');
+
+            addToCart({
+                ...product,
+                name: variant.name || product.name,
+                sku: variant.sku,
+                price: parseFloat(variant.price) || 0,
+                image: mainImage || (product.images && product.images[0]?.url) || '',
+                variantDetails: `Material: ${variant.material || 'Estándar'} | ${variantDetails}`,
+                quantity: qty
+            });
+
+            // Limpiar cantidad de la fila
+            setRowQuantity(variant.sku, 0);
+        });
+
+        openDrawer();
     };
 
     if (loading) {
@@ -154,8 +184,10 @@ const ProductDetail = () => {
                     getRowQuantity={getRowQuantity}
                     setRowQuantity={setRowQuantity}
                     handleInlineAddToCart={handleInlineAddToCart}
+                    handleBulkAddToCart={handleBulkAddToCart}
                     getCartItem={getCartItem}
                     productName={product.name}
+                    rowQuantities={rowQuantities}
                 />
 
                 <Link
