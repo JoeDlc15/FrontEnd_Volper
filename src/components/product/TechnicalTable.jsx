@@ -8,87 +8,153 @@ const VariantRow = React.memo(({
     productName,
     setRowQuantity,
     handleInlineAddToCart,
-    showIndividualCart
+    showIndividualCart,
+    isMobile = false
 }) => {
     const price = parseFloat(variant.price) || 0;
     const subtotal = price * qty;
 
+    if (!isMobile) {
+        return (
+            <tr
+                className={`hidden md:table-row transition-colors group hover:bg-primary/5 
+                ${inCart ? 'bg-amber-50 dark:bg-amber-900/10 border-l-4 border-l-amber-400' : ''}
+                ${variant.stock <= 0 ? 'opacity-50' : ''}`}
+            >
+                <td className="px-6 py-4 font-mono text-xs font-bold text-primary">
+                    <div className="flex items-center gap-2">
+                        {variant.sku}
+                        {inCart && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black">
+                                <ShoppingCart size={10} />
+                                {inCart.quantity}
+                            </span>
+                        )}
+                    </div>
+                </td>
+                <td className="px-6 py-4 text-xs text-slate-700 dark:text-slate-300 font-semibold">{variant.name || productName}</td>
+                <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${variant.stock > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
+                        {variant.stock > 0 ? 'Disponible' : 'Sin Stock'}
+                    </span>
+                </td>
+                <td className="px-6 py-4 text-xs font-bold text-slate-600 dark:text-slate-400">
+                    ${price.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                </td>
+                <td className="px-6 py-4">
+                    <div className="flex items-center justify-center">
+                        <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900 h-9">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setRowQuantity(variant.sku, qty - 10); }}
+                                className="px-2 text-slate-400 hover:text-primary transition-colors h-full"
+                                disabled={variant.stock <= 0}
+                            >
+                                <Minus size={12} />
+                            </button>
+                            <input
+                                type="number"
+                                min="0"
+                                step="10"
+                                value={qty || ''}
+                                onChange={(e) => { e.stopPropagation(); setRowQuantity(variant.sku, parseInt(e.target.value) || 0); }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-10 text-center font-bold text-xs dark:text-white bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                placeholder="0"
+                                disabled={variant.stock <= 0}
+                            />
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setRowQuantity(variant.sku, qty + 10); }}
+                                className="px-2 text-slate-400 hover:text-primary transition-colors h-full"
+                                disabled={variant.stock <= 0}
+                            >
+                                <Plus size={12} />
+                            </button>
+                        </div>
+                    </div>
+                </td>
+                <td className="px-6 py-4 text-center text-xs font-black text-slate-900 dark:text-white">
+                    {subtotal > 0 ? `$${subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}` : '-'}
+                </td>
+                {showIndividualCart && (
+                    <td className="px-6 py-4 text-center">
+                        <button
+                            onClick={(e) => handleInlineAddToCart(variant, e)}
+                            disabled={variant.stock <= 0 || qty <= 0}
+                            className={`inline-flex items-center justify-center w-9 h-9 rounded-xl transition-all ${variant.stock > 0 && qty > 0
+                                ? 'bg-primary text-white hover:brightness-110 active:scale-90 shadow-md shadow-primary/20 cursor-pointer'
+                                : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                                }`}
+                            title={inCart ? `Ya tienes ${inCart.quantity} en el carrito` : 'Añadir al carrito'}
+                        >
+                            <ShoppingCart size={16} />
+                        </button>
+                    </td>
+                )}
+            </tr>
+        );
+    }
+
     return (
-        <tr
-            className={`transition-colors group hover:bg-primary/5 
-            ${inCart ? 'bg-amber-50 dark:bg-amber-900/10 border-l-4 border-l-amber-400' : ''}
-            ${variant.stock <= 0 ? 'opacity-50' : ''}`}
-        >
-            <td className="px-6 py-4 font-mono text-sm font-bold text-primary text-xs">
-                <div className="flex items-center gap-2">
-                    {variant.sku}
-                    {inCart && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black">
-                            <ShoppingCart size={10} />
-                            {inCart.quantity}
-                        </span>
-                    )}
+        <div className={`md:hidden p-5 rounded-3xl border transition-all mb-4 bg-white dark:bg-slate-900 
+            ${inCart ? 'border-primary ring-1 ring-primary/20 bg-primary/5' : 'border-slate-100 dark:border-slate-800 shadow-sm'}`}>
+
+            <div className="flex justify-between items-start mb-4">
+                <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">CÓDIGO</p>
+                    <h4 className="text-sm font-black text-primary">{variant.sku}</h4>
                 </div>
-            </td>
-            <td className="px-6 py-4 text-xs text-slate-700 dark:text-slate-300 font-semibold">{variant.name || productName}</td>
-            <td className="px-6 py-4">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${variant.stock > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
+                <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${variant.stock > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
                     {variant.stock > 0 ? 'Disponible' : 'Sin Stock'}
                 </span>
-            </td>
-            <td className="px-6 py-4 text-xs font-bold text-slate-600 dark:text-slate-400">
-                ${price.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-            </td>
-            <td className="px-6 py-4">
-                <div className="flex items-center justify-center">
-                    <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900 h-9">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setRowQuantity(variant.sku, qty - 10); }}
-                            className="px-2 text-slate-400 hover:text-primary transition-colors h-full"
-                            disabled={variant.stock <= 0}
-                        >
-                            <Minus size={12} />
-                        </button>
-                        <input
-                            type="number"
-                            min="0"
-                            step="10"
-                            value={qty || ''}
-                            onChange={(e) => { e.stopPropagation(); setRowQuantity(variant.sku, parseInt(e.target.value) || 0); }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-10 text-center font-bold text-xs dark:text-white bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            placeholder="0"
-                            disabled={variant.stock <= 0}
-                        />
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setRowQuantity(variant.sku, qty + 10); }}
-                            className="px-2 text-slate-400 hover:text-primary transition-colors h-full"
-                            disabled={variant.stock <= 0}
-                        >
-                            <Plus size={12} />
-                        </button>
-                    </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nombre / Medida</p>
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{variant.name || productName}</p>
                 </div>
-            </td>
-            <td className="px-6 py-4 text-center text-xs font-black text-slate-900 dark:text-white">
-                {subtotal > 0 ? `$${subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}` : '-'}
-            </td>
-            {showIndividualCart && (
-                <td className="px-6 py-4 text-center">
+                <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Precio Unit.</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">${price.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</p>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950 h-10 px-1">
+                    <button
+                        onClick={() => setRowQuantity(variant.sku, qty - 10)}
+                        className="w-10 h-full flex items-center justify-center text-slate-400"
+                        disabled={variant.stock <= 0}
+                    >
+                        <Minus size={14} />
+                    </button>
+                    <span className="w-8 text-center font-black text-sm dark:text-white">{qty}</span>
+                    <button
+                        onClick={() => setRowQuantity(variant.sku, qty + 10)}
+                        className="w-10 h-full flex items-center justify-center text-slate-400"
+                        disabled={variant.stock <= 0}
+                    >
+                        <Plus size={14} />
+                    </button>
+                </div>
+
+                {showIndividualCart ? (
                     <button
                         onClick={(e) => handleInlineAddToCart(variant, e)}
                         disabled={variant.stock <= 0 || qty <= 0}
-                        className={`inline-flex items-center justify-center w-9 h-9 rounded-xl transition-all ${variant.stock > 0 && qty > 0
-                            ? 'bg-primary text-white hover:brightness-110 active:scale-90 shadow-md shadow-primary/20 cursor-pointer'
-                            : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                            }`}
-                        title={inCart ? `Ya tienes ${inCart.quantity} en el carrito` : 'Añadir al carrito'}
+                        className="flex-1 h-10 bg-primary text-white font-black text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
                     >
                         <ShoppingCart size={16} />
+                        Cotizar
                     </button>
-                </td>
-            )}
-        </tr>
+                ) : (
+                    <div className="text-right flex-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Subtotal</p>
+                        <p className="text-sm font-black text-primary">${subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</p>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 });
 
@@ -208,8 +274,9 @@ const TechnicalTable = ({
                 </div>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
-                <table className="w-full text-left">
+            <div className="overflow-hidden rounded-3xl md:border md:border-slate-200 md:dark:border-slate-800 md:shadow-sm">
+                {/* Desktop View */}
+                <table className="w-full text-left hidden md:table">
                     <thead>
                         <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-primary tracking-widest">SKU / Modelo</th>
@@ -224,7 +291,7 @@ const TechnicalTable = ({
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-900 bg-white dark:bg-slate-950">
                         {variants.map((v) => (
                             <VariantRow
-                                key={v.sku}
+                                key={`desktop-${v.sku}`}
                                 variant={v}
                                 qty={getRowQuantity(v.sku)}
                                 inCart={getCartItem(v.sku)}
@@ -232,10 +299,28 @@ const TechnicalTable = ({
                                 setRowQuantity={setRowQuantity}
                                 handleInlineAddToCart={handleInlineAddToCart}
                                 showIndividualCart={!multiSelect}
+                                isMobile={false}
                             />
                         ))}
                     </tbody>
                 </table>
+
+                {/* Mobile View */}
+                <div className="md:hidden space-y-4">
+                    {variants.map((v) => (
+                        <VariantRow
+                            key={`mobile-${v.sku}`}
+                            variant={v}
+                            qty={getRowQuantity(v.sku)}
+                            inCart={getCartItem(v.sku)}
+                            productName={productName}
+                            setRowQuantity={setRowQuantity}
+                            handleInlineAddToCart={handleInlineAddToCart}
+                            showIndividualCart={!multiSelect}
+                            isMobile={true}
+                        />
+                    ))}
+                </div>
             </div>
         </section>
     );
