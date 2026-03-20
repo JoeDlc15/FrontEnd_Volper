@@ -3,6 +3,7 @@ import CategorySidebar from '../components/CategorySidebar';
 import ProductCard from '../components/ProductCard';
 import { Search, Loader2, Filter } from 'lucide-react';
 import { getProducts } from '../services/api';
+import { CatalogSkeleton } from '../components/ui/Skeleton';
 
 const Catalog = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -38,6 +39,10 @@ const Catalog = () => {
         { id: 'all', name: 'Todos los Productos' },
         ...Array.from(new Map(products.filter(p => p.category !== 'unknown').map(p => [p.category, { id: p.category, name: p.categoryName }])).values())
     ];
+
+    if (loading) {
+        return <CatalogSkeleton />;
+    }
 
     return (
         <div className="bg-slate-50 dark:bg-slate-900 min-h-screen py-12">
@@ -94,19 +99,11 @@ const Catalog = () => {
                             </div>
                         </div>
 
-                        {/* Products Grid */}
-                        {loading ? (
-                            <div className="flex flex-col items-center justify-center py-24 text-slate-400">
-                                <Loader2 className="animate-spin mb-4" size={48} />
-                                <p className="font-medium">Cargando productos...</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-                                {filteredProducts.map(product => (
-                                    <ProductCard key={product.id} product={product} />
-                                ))}
-                            </div>
-                        )}
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                            {filteredProducts.map(product => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
 
                         {filteredProducts.length === 0 && (
                             <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">

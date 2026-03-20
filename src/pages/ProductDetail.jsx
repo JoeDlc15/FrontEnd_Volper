@@ -9,6 +9,7 @@ import ProductGallery from '../components/product/ProductGallery';
 import ProductInfo from '../components/product/ProductInfo';
 import TechnicalTable from '../components/product/TechnicalTable';
 import CartConfirmationModal from '../components/product/CartConfirmationModal';
+import { ProductDetailSkeleton } from '../components/ui/Skeleton';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -134,14 +135,8 @@ const ProductDetail = () => {
 
         openDrawer();
     };
-
     if (loading) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950">
-                <Loader2 className="animate-spin text-primary mb-4" size={48} />
-                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Cargando especificaciones...</p>
-            </div>
-        );
+        return <ProductDetailSkeleton />;
     }
 
     if (!product) {
