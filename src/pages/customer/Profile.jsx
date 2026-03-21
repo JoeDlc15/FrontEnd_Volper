@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { User, Mail, Phone, Briefcase, MapPin, Pencil, Edit2, Save, X, Loader2 } from 'lucide-react';
 import { updateCustomerProfile } from '../../services/api';
 
 const InfoField = ({ icon: Icon, label, value, name, type = "text", required = false, isEditing, formData, handleInputChange }) => (

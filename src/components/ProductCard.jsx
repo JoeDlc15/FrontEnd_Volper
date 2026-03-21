@@ -31,7 +31,7 @@ const ProductCard = ({ product }) => {
     return (
         <div className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-slate-200 dark:border-slate-700 flex flex-col h-full mx-auto w-full md:max-w-xs" style={{ fontFamily: "'Barlow', sans-serif" }}>
             <Link to={`/producto/${product.id}`} className="block relative group-image">
-                <div className="h-48 md:h-56 bg-slate-100 dark:bg-slate-800/80 p-6 md:p-8 flex items-center justify-center relative overflow-hidden border-b border-transparent dark:border-slate-700">
+                <div className="h-40 md:h-48 bg-slate-100 dark:bg-slate-800/80 p-4 md:p-5 flex items-center justify-center relative overflow-hidden border-b border-transparent dark:border-slate-700">
                     <div className="absolute top-2 left-2 z-30 md:hidden">
                         <span className="bg-primary/80 text-white px-2 py-1 md:px-3 text-[8.5px] md:text-[9.5px] uppercase tracking-widest rounded-full shadow-sm whitespace-nowrap">
                             {product.category}
@@ -60,16 +60,16 @@ const ProductCard = ({ product }) => {
                 </div>
             </Link>
 
-            <div className="p-4 md:p-5 flex flex-col flex-grow">
+            <div className="p-3 md:p-4 flex flex-col flex-grow">
                 {/* Categoría (Solo PC) */}
-                <div className="hidden md:block text-slate-500 dark:text-slate-400 text-xs font-semibold mb-2 tracking-wide uppercase">
+                <div className="hidden md:block text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-semibold mb-1 tracking-wide uppercase">
                     {product.category}
                 </div>
 
-                <Link to={`/producto/${product.id}`} className="mb-2 block min-h-[40px] md:min-h-[48px] flex items-center">
+                <Link to={`/producto/${product.id}`} className="mb-2 block flex items-center">
                     <h3
                         ref={titleRef}
-                        className="text-[14px] md:text-[17px] font-bold text-primary transition-colors line-clamp-2 leading-tight"
+                        className="text-[13px] md:text-[16px] font-bold text-primary transition-colors line-clamp-2 leading-tight"
                         title={product.name}
                         style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
                     >
@@ -77,10 +77,6 @@ const ProductCard = ({ product }) => {
                     </h3>
                 </Link>
 
-                <p className={`text-slate-500 dark:text-slate-400 mb-4 md:mb-5 text-[11px] md:text-[13px] leading-snug md:leading-relaxed ${isLongTitle ? 'line-clamp-1' : 'line-clamp-2 md:line-clamp-3'
-                    }`}>
-                    {product.description}
-                </p>
 
                 <div className="mt-auto">
                     <Link

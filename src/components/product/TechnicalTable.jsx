@@ -11,8 +11,6 @@ const VariantRow = React.memo(({
     showIndividualCart,
     isMobile = false
 }) => {
-    const price = parseFloat(variant.price) || 0;
-    const subtotal = price * qty;
 
     if (!isMobile) {
         return (
@@ -37,9 +35,6 @@ const VariantRow = React.memo(({
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${variant.stock > 0 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400'}`}>
                         {variant.stock > 0 ? 'Disponible' : 'Sin Stock'}
                     </span>
-                </td>
-                <td className="px-6 py-4 text-xs font-bold text-slate-600 dark:text-slate-400">
-                    ${price.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
                 </td>
                 <td className="px-6 py-4">
                     <div className="flex items-center justify-center">
@@ -71,9 +66,6 @@ const VariantRow = React.memo(({
                             </button>
                         </div>
                     </div>
-                </td>
-                <td className="px-6 py-4 text-center text-xs font-black text-slate-900 dark:text-white">
-                    {subtotal > 0 ? `$${subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}` : '-'}
                 </td>
                 {showIndividualCart && (
                     <td className="px-6 py-4 text-center">
@@ -113,10 +105,6 @@ const VariantRow = React.memo(({
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nombre / Medida</p>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{variant.name || productName}</p>
                 </div>
-                <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Precio Unit.</p>
-                    <p className="text-xs font-bold text-slate-900 dark:text-white">${price.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</p>
-                </div>
             </div>
 
             <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
@@ -149,8 +137,10 @@ const VariantRow = React.memo(({
                     </button>
                 ) : (
                     <div className="text-right flex-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Subtotal</p>
-                        <p className="text-sm font-black text-primary">${subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estado</p>
+                        <p className={`text-[11px] font-black ${variant.stock > 0 ? 'text-green-600' : 'text-rose-600'}`}>
+                            {variant.stock > 0 ? 'Disponible' : 'Sin Stock'}
+                        </p>
                     </div>
                 )}
             </div>
@@ -180,7 +170,7 @@ const TechnicalTable = ({
 
     return (
         <section className="mb-24 relative">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6 pt-8 border-t border-slate-100 dark:border-slate-900">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-4 gap-6 pt-8 border-t border-slate-100 dark:border-slate-900">
                 <div>
                     <h3 className="text-2xl font-bold font-display mb-1">Especificaciones Técnicas</h3>
                     <p className="text-sm text-slate-500 font-medium">
@@ -282,9 +272,7 @@ const TechnicalTable = ({
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-primary tracking-widest">SKU / Modelo</th>
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-widest">Nombre Pieza</th>
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-widest">Estado</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-widest">Precio Unit.</th>
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-primary tracking-widest text-center">Cantidad</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase text-primary tracking-widest text-center">Subtotal</th>
                             {!multiSelect && <th className="px-6 py-4 text-[10px] font-black uppercase text-primary tracking-widest text-center">Acción</th>}
                         </tr>
                     </thead>

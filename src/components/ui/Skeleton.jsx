@@ -66,7 +66,6 @@ export const ProductDetailSkeleton = () => {
                             <div key={i} className="p-6 flex items-center justify-between border-b border-slate-50 dark:border-slate-900 last:border-0">
                                 <Skeleton className="h-4 w-24" />
                                 <Skeleton className="h-4 w-48" />
-                                <Skeleton className="h-4 w-16" />
                                 <Skeleton className="h-4 w-20" />
                                 <Skeleton className="h-8 w-24 rounded-lg" />
                             </div>
@@ -80,16 +79,15 @@ export const ProductDetailSkeleton = () => {
 
 export const ProductCardSkeleton = () => {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-100 dark:border-slate-700 space-y-4">
-            <Skeleton className="aspect-square w-full rounded-xl" />
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 border border-slate-100 dark:border-slate-700 space-y-3">
+            <Skeleton className="h-32 md:h-40 w-full rounded-xl" />
             <div className="space-y-2">
                 <Skeleton className="h-3 w-20" />
                 <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-4 w-1/2" />
             </div>
-            <div className="flex justify-between items-center pt-2">
-                <Skeleton className="h-6 w-16" />
-                <Skeleton className="h-10 w-10 rounded-lg" />
+            <div className="flex justify-between items-center pt-1">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-9 w-24 rounded-lg" />
             </div>
         </div>
     );

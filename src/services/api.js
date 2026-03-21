@@ -147,6 +147,50 @@ export const getCustomerQuotes = async () => {
     }
 };
 
+export const updateQuoteItems = async (quoteId, items) => {
+    const token = localStorage.getItem('customerToken');
+    const response = await fetch(`${API_BASE_URL}/customer/quotes/${quoteId}/items`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Bypass-Tunnel-Reminder': 'true'
+        },
+        body: JSON.stringify({ items })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al actualizar ítems');
+    return data;
+};
+
+export const cancelQuote = async (quoteId) => {
+    const token = localStorage.getItem('customerToken');
+    const response = await fetch(`${API_BASE_URL}/customer/quotes/${quoteId}/cancel`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Bypass-Tunnel-Reminder': 'true'
+        }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al cancelar cotización');
+    return data;
+};
+
+export const duplicateQuote = async (quoteId) => {
+    const token = localStorage.getItem('customerToken');
+    const response = await fetch(`${API_BASE_URL}/customer/quotes/${quoteId}/duplicate`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Bypass-Tunnel-Reminder': 'true'
+        }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Error al re-cotizar');
+    return data;
+};
+
 export const forgotPassword = async (email) => {
     try {
         const response = await fetch(`${API_BASE_URL}/customer/forgot-password`, {

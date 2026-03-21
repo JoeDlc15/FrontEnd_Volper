@@ -159,7 +159,7 @@ const ProductDetail = () => {
                     <span className="text-slate-900 dark:text-slate-100 font-bold">{product.name}</span>
                 </nav>
 
-                <div className="flex flex-col lg:flex-row gap-16 mb-24">
+                <div className="flex flex-col lg:flex-row gap-16 mb-18">
                     <ProductGallery
                         images={product.images}
                         mainImage={mainImage}

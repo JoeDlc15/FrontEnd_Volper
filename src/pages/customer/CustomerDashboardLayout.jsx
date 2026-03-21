@@ -1,10 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { User, ShoppingBag, LogOut, ChevronRight, Settings } from 'lucide-react';
+import { User, ShoppingBag, LogOut, ChevronRight, Bell, X } from 'lucide-react';
+import { io } from 'socket.io-client';
+
+const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const SOCKET_URL = VITE_API_URL.replace('/api', '');
 
 const CustomerDashboardLayout = () => {
     const { user, logout, loading } = useAuth();
+    const [toast, setToast] = useState(null);
+
+    useEffect(() => {
+        if (!user) return;
+
+        const socket = io(SOCKET_URL);
+
+        socket.on('quote-status-updated', (data) => {
+            // Solo mostrar si el email coincide con el del usuario logueado
+            if (data.email === user.email) {
+                const statusEmoji = {
+                    in_review: '🛠️',
+                    approved: '✅',
+                    rejected: '❌',
+                    cancelled: '⬜',
+                    closed: '🔵'
+                };
+
+                setToast({
+                    maskId: data.maskId,
+                    statusLabel: data.statusLabel,
+                    emoji: statusEmoji[data.status] || '📋',
+                    note: data.adminNote,
+                    timestamp: Date.now()
+                });
+
+                // Auto-dismiss después de 8 segundos
+                setTimeout(() => {
+                    setToast(prev => prev?.timestamp === Date.now() ? null : prev);
+                }, 8000);
+            }
+        });
+
+        return () => socket.disconnect();
+    }, [user]);
 
     if (loading) {
         return (
@@ -24,7 +63,36 @@ const CustomerDashboardLayout = () => {
     ];
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-950 min-h-[calc(100vh-80px)] py-10">
+        <div className="bg-slate-50 dark:bg-slate-950 min-h-[calc(100vh-80px)] py-10 relative">
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className="fixed top-6 right-6 z-[200] animate-in slide-in-from-top-4 fade-in duration-500 max-w-sm w-full">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-black/10 border border-slate-200 dark:border-slate-800 p-5 flex items-start gap-4">
+                        <div className="text-2xl flex-shrink-0 mt-0.5">{toast.emoji}</div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">
+                                {toast.maskId}
+                            </p>
+                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                Tu cotización fue actualizada a: <span className="text-primary">{toast.statusLabel}</span>
+                            </p>
+                            {toast.note && (
+                                <p className="text-xs text-slate-500 mt-2 leading-relaxed line-clamp-2">
+                                    "{toast.note}"
+                                </p>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => setToast(null)}
+                            className="p-1 text-slate-300 hover:text-slate-600 dark:hover:text-white transition-colors flex-shrink-0"
+                        >
+                            <X size={16} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row gap-8">
                     {/* Sidebar */}

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Calendar, List, Clock, CheckCircle, AlertCircle, ChevronRight, FileText } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ShoppingBag, Calendar, List, Clock, CheckCircle, AlertCircle, XCircle, ChevronRight, FileText, Copy, Loader2 } from 'lucide-react';
 import QuoteDetailModal from '../../components/customer/QuoteDetailModal';
-import { getCustomerQuotes } from '../../services/api';
+import { getCustomerQuotes, cancelQuote, duplicateQuote } from '../../services/api';
 
 const QuotesHistory = () => {
     const [quotes, setQuotes] = useState([]);
@@ -9,36 +9,71 @@ const QuotesHistory = () => {
     const [error, setError] = useState('');
     const [selectedQuoteId, setSelectedQuoteId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [actionLoading, setActionLoading] = useState(null); // stores quoteId being actioned
+
+    const fetchQuotes = useCallback(async () => {
+        try {
+            const data = await getCustomerQuotes();
+            setQuotes(data);
+        } catch (err) {
+            console.error('Error fetching quotes:', err);
+            setError('Error de conexión con el servidor.');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
-        const fetchQuotes = async () => {
-            try {
-                const data = await getCustomerQuotes();
-                setQuotes(data);
-            } catch (err) {
-                console.error('Error fetching quotes:', err);
-                setError('Error de conexión con el servidor.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchQuotes();
-    }, []);
+    }, [fetchQuotes]);
 
     const openQuoteDetail = (id) => {
         setSelectedQuoteId(id);
         setIsModalOpen(true);
     };
 
+    const handleQuickCancel = async (quoteId, e) => {
+        e.stopPropagation();
+        if (!confirm('¿Deseas cancelar esta cotización?')) return;
+        setActionLoading(quoteId);
+        try {
+            await cancelQuote(quoteId);
+            await fetchQuotes();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleQuickDuplicate = async (quoteId, e) => {
+        e.stopPropagation();
+        setActionLoading(quoteId);
+        try {
+            const newQuote = await duplicateQuote(quoteId);
+            await fetchQuotes();
+            alert(`Nueva cotización ${newQuote.maskId} creada exitosamente.`);
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const getStatusInfo = (status) => {
         switch (status?.toLowerCase()) {
             case 'pending':
-                return { label: 'En Revisión', icon: Clock, color: 'text-amber-500 bg-amber-50 border-amber-100' };
+                return { label: 'Pendiente', icon: Clock, color: 'text-amber-500 bg-amber-50 border-amber-100' };
+            case 'in_review':
+                return { label: 'En Revisión', icon: Clock, color: 'text-sky-500 bg-sky-50 border-sky-100' };
             case 'approved':
                 return { label: 'Aprobada', icon: CheckCircle, color: 'text-green-500 bg-green-50 border-green-100' };
             case 'rejected':
                 return { label: 'Rechazada', icon: AlertCircle, color: 'text-red-500 bg-red-50 border-red-100' };
+            case 'cancelled':
+                return { label: 'Cancelada', icon: XCircle, color: 'text-slate-400 bg-slate-50 border-slate-200' };
+            case 'closed':
+                return { label: 'Cerrada', icon: CheckCircle, color: 'text-blue-500 bg-blue-50 border-blue-100' };
             default:
                 return { label: status || 'Pendiente', icon: Clock, color: 'text-slate-500 bg-slate-50 border-slate-100' };
         }
@@ -85,47 +120,80 @@ const QuotesHistory = () => {
                 <div className="space-y-4">
                     {quotes.map((quote) => {
                         const statusInfo = getStatusInfo(quote.status);
+                        const isPending = quote.status?.toLowerCase() === 'pending';
+                        const isActioning = actionLoading === quote.id;
+
                         return (
-                            <div key={quote.id} className="group bg-white dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all flex flex-col md:flex-row md:items-center gap-6">
-                                {/* Quote Identifier */}
-                                <div className="flex items-center gap-4 min-w-[140px]">
-                                    <div className="size-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                                        <FileText size={22} />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">ID #{quote.id}</p>
-                                        <div className="flex items-center gap-1.5 text-slate-500 text-xs mt-0.5">
-                                            <Calendar size={12} />
-                                            {new Date(quote.createdAt).toLocaleDateString()}
+                            <div
+                                key={quote.id}
+                                className="group bg-white dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all cursor-pointer"
+                                onClick={() => openQuoteDetail(quote.id)}
+                            >
+                                <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+                                    {/* Quote Identifier */}
+                                    <div className="flex items-center gap-4 min-w-[160px]">
+                                        <div className="size-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-primary/20 group-hover:text-primary transition-colors flex-shrink-0">
+                                            <FileText size={22} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-black uppercase tracking-widest text-primary">{quote.maskId || `COT-${String(quote.id).padStart(5, '0')}`}</p>
+                                            <div className="flex items-center gap-1.5 text-slate-500 text-xs mt-0.5">
+                                                <Calendar size={12} />
+                                                {new Date(quote.createdAt).toLocaleDateString()}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Items Count */}
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <List size={14} className="text-slate-400" />
-                                        <span className="text-sm font-bold text-slate-900 dark:text-white">
-                                            {quote._count?.items || 0} Productos
-                                        </span>
+                                    {/* Items Count */}
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <List size={14} className="text-slate-400" />
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                {quote._count?.items || 0} Producto{(quote._count?.items || 0) !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-slate-500 line-clamp-1">
+                                            Solicitud enviada para {quote.company || 'Uso personal'}
+                                        </p>
                                     </div>
-                                    <p className="text-xs text-slate-500 line-clamp-1">
-                                        Solicitud enviada para {quote.company || 'Uso personal'}
-                                    </p>
-                                </div>
 
-                                {/* Status Tag */}
-                                <div className="flex flex-row md:flex-col items-center md:items-end gap-3 justify-between md:justify-center">
-                                    <div className={`px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${statusInfo.color}`}>
-                                        <statusInfo.icon size={12} />
-                                        {statusInfo.label}
+                                    {/* Status + Actions */}
+                                    <div className="flex flex-row items-center gap-3 justify-between md:justify-end">
+                                        <div className={`px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${statusInfo.color}`}>
+                                            <statusInfo.icon size={12} />
+                                            {statusInfo.label}
+                                        </div>
+
+                                        {/* Quick Actions */}
+                                        <div className="flex items-center gap-2">
+                                            {isPending && (
+                                                <button
+                                                    onClick={(e) => handleQuickCancel(quote.id, e)}
+                                                    disabled={isActioning}
+                                                    className="p-2 text-slate-300 hover:text-rose-500 transition-colors rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 disabled:opacity-50"
+                                                    title="Cancelar cotización"
+                                                >
+                                                    {isActioning ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
+                                                </button>
+                                            )}
+                                            {!isPending && (
+                                                <button
+                                                    onClick={(e) => handleQuickDuplicate(quote.id, e)}
+                                                    disabled={isActioning}
+                                                    className="p-2 text-slate-300 hover:text-primary transition-colors rounded-lg hover:bg-primary/10 disabled:opacity-50"
+                                                    title="Re-cotizar (crear nueva)"
+                                                >
+                                                    {isActioning ? <Loader2 size={16} className="animate-spin" /> : <Copy size={16} />}
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); openQuoteDetail(quote.id); }}
+                                                className="text-primary text-xs font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                Ver <ChevronRight size={14} />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={() => openQuoteDetail(quote.id)}
-                                        className="text-primary text-xs font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        Ver Detalles <ChevronRight size={14} />
-                                    </button>
                                 </div>
                             </div>
                         );
@@ -138,6 +206,7 @@ const QuotesHistory = () => {
                 quoteId={selectedQuoteId}
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+                onQuoteUpdated={fetchQuotes}
             />
         </div>
     );
