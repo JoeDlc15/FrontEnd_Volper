@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Eye, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useFavorites } from '../context/FavoriteContext';
 
 const ProductCard = ({ product }) => {
     const { addToCart } = useCart();
+    const { isFavorite, toggleFavorite } = useFavorites();
     const titleRef = useRef(null);
     const [isLongTitle, setIsLongTitle] = useState(false);
 
@@ -51,10 +53,14 @@ const ProductCard = ({ product }) => {
                             <Eye size={18} />
                         </div>
                         <button
-                            className="p-2 bg-white dark:bg-slate-900 rounded-full shadow-lg text-slate-600 dark:text-slate-300 hover:text-primary transition-colors"
-                            onClick={(e) => { e.preventDefault(); }}
+                            className={`p-2 bg-white dark:bg-slate-900 rounded-full shadow-lg transition-colors ${isFavorite(product.id) ? 'text-yellow-500' : 'text-slate-600 dark:text-slate-300 hover:text-primary'}`}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleFavorite(product.id);
+                            }}
                         >
-                            <Star size={18} />
+                            <Star size={18} fill={isFavorite(product.id) ? "currentColor" : "none"} />
                         </button>
                     </div>
                 </div>
@@ -62,14 +68,14 @@ const ProductCard = ({ product }) => {
 
             <div className="p-3 md:p-4 flex flex-col flex-grow">
                 {/* Categoría (Solo PC) */}
-                <div className="hidden md:block text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-semibold mb-1 tracking-wide uppercase">
+                <div className="hidden md:block text-slate-400 dark:text-slate-500 text-[10px] md:text-[11px] font-semibold mb-1 tracking-widest uppercase">
                     {product.category}
                 </div>
 
-                <Link to={`/producto/${product.id}`} className="mb-2 block flex items-center">
+                <Link to={`/producto/${product.id}`} className="mb-4 block flex items-center">
                     <h3
                         ref={titleRef}
-                        className="text-[13px] md:text-[16px] font-bold text-primary transition-colors line-clamp-2 leading-tight"
+                        className="text-[14px] md:text-[18px] font-black text-slate-900 dark:text-white transition-colors line-clamp-2 leading-tight group-hover:text-primary"
                         title={product.name}
                         style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
                     >
@@ -81,7 +87,7 @@ const ProductCard = ({ product }) => {
                 <div className="mt-auto">
                     <Link
                         to={`/producto/${product.id}`}
-                        className="w-full bg-primary/80 dark:bg-primary/80 py-2 md:py-3 block text-center rounded-lg md:rounded-xl text-white font-bold hover:bg-[#16a34a] transition-all font-display uppercase tracking-wider text-[10px] md:text-[12px] shadow-sm"
+                        className="w-full border-2 border-primary py-2 md:py-3 block text-center rounded-lg md:rounded-xl text-primary font-bold group-hover:bg-primary group-hover:text-white transition-all font-display uppercase tracking-wider text-[11px] md:text-[13px]"
                     >
                         Ver Medidas
                     </Link>

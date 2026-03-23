@@ -4,6 +4,7 @@ import ProductCard from '../components/ProductCard';
 import { Search, Loader2, Filter } from 'lucide-react';
 import { getProducts } from '../services/api';
 import { CatalogSkeleton } from '../components/ui/Skeleton';
+import { useFavorites } from '../context/FavoriteContext';
 
 const Catalog = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -11,6 +12,7 @@ const Catalog = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { isFavorite } = useFavorites();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -100,9 +102,18 @@ const Catalog = () => {
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-                            {filteredProducts.map(product => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
+                            {[...filteredProducts]
+                                .sort((a, b) => {
+                                    const aFav = isFavorite(a.id);
+                                    const bFav = isFavorite(b.id);
+                                    if (aFav && !bFav) return -1;
+                                    if (!aFav && bFav) return 1;
+                                    return 0;
+                                })
+                                .map(product => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))
+                            }
                         </div>
 
                         {filteredProducts.length === 0 && (

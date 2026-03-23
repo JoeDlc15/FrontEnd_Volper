@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { FavoriteProvider } from './context/FavoriteContext';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
@@ -22,38 +23,40 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <CartProvider>
-          <Router>
-            <ScrollToTop />
-            <Routes>
-              {/* Rutas Públicas - Con Navbar y Footer */}
-              <Route path="/*" element={
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/catalogo" element={<Catalog />} />
-                    <Route path="/producto/:id" element={<ProductDetail />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/nosotros" element={<About />} />
-                    <Route path="/contacto" element={<Contact />} />
-                    <Route path="/soluciones" element={<Solutions />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <FavoriteProvider>
+          <CartProvider>
+            <Router>
+              <ScrollToTop />
+              <Routes>
+                {/* Rutas Públicas - Con Navbar y Footer */}
+                <Route path="/*" element={
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/catalogo" element={<Catalog />} />
+                      <Route path="/producto/:id" element={<ProductDetail />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/nosotros" element={<About />} />
+                      <Route path="/contacto" element={<Contact />} />
+                      <Route path="/soluciones" element={<Solutions />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-                    {/* Panel de Cliente */}
-                    <Route path="/mi-cuenta" element={<CustomerDashboardLayout />}>
-                      <Route index element={<Navigate to="perfil" replace />} />
-                      <Route path="perfil" element={<Profile />} />
-                      <Route path="pedidos" element={<QuotesHistory />} />
-                    </Route>
+                      {/* Panel de Cliente */}
+                      <Route path="/mi-cuenta" element={<CustomerDashboardLayout />}>
+                        <Route index element={<Navigate to="perfil" replace />} />
+                        <Route path="perfil" element={<Profile />} />
+                        <Route path="pedidos" element={<QuotesHistory />} />
+                      </Route>
 
-                    <Route path="*" element={<Navigate to="/" />} />
-                  </Routes>
-                </Layout>
-              } />
-            </Routes>
-          </Router>
-        </CartProvider>
+                      <Route path="*" element={<Navigate to="/" />} />
+                    </Routes>
+                  </Layout>
+                } />
+              </Routes>
+            </Router>
+          </CartProvider>
+        </FavoriteProvider>
       </AuthProvider>
     </ThemeProvider>
   );

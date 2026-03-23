@@ -1,10 +1,24 @@
 import React from 'react';
-import { ShieldCheck, Truck, ShoppingCart } from 'lucide-react';
+import { ShieldCheck, Truck, ShoppingCart, Star } from 'lucide-react';
+import { useFavorites } from '../../context/FavoriteContext';
 
 const ProductInfo = ({ product, viewCount }) => {
+    const { isFavorite, toggleFavorite } = useFavorites();
+    const favActive = isFavorite(product.id);
+
     return (
         <div className="w-full lg:w-1/2 flex flex-col justify-center">
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">{product.name}</h1>
+            <div className="flex justify-between items-start mb-4">
+                <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 flex-1">{product.name}</h1>
+                <button
+                    onClick={() => toggleFavorite(product.id)}
+                    className={`ml-4 p-3 rounded-2xl border transition-all flex items-center gap-2 font-black uppercase tracking-widest text-[10px] shadow-sm ${favActive ? 'bg-yellow-50 border-yellow-200 text-yellow-600 dark:bg-yellow-950/20 dark:border-yellow-900/30' : 'bg-slate-50 border-slate-100 text-slate-400 hover:text-primary hover:border-primary/30 dark:bg-slate-900 dark:border-slate-800'}`}
+                    title={favActive ? "Quitar de favoritos" : "Añadir a favoritos"}
+                >
+                    <Star size={16} fill={favActive ? "currentColor" : "none"} />
+                    {favActive ? 'Favorito' : 'Favorito'}
+                </button>
+            </div>
 
             <div className="flex items-center gap-6 mb-8">
                 <span className="text-slate-400 text-sm font-medium">SKU: {product.sku}</span>

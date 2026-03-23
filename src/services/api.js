@@ -224,3 +224,61 @@ export const resetPassword = async (token, password) => {
         return { error: 'Error de conexión' };
     }
 };
+export const getFavorites = async () => {
+    try {
+        const token = localStorage.getItem('customerToken');
+        if (!token) return [];
+        const response = await fetch(`${API_BASE_URL}/favorites`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Bypass-Tunnel-Reminder': 'true'
+            }
+        });
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (error) {
+        console.error('API Error (getFavorites):', error);
+        return [];
+    }
+};
+
+export const toggleFavorite = async (productId) => {
+    try {
+        const token = localStorage.getItem('customerToken');
+        if (!token) return null;
+        const response = await fetch(`${API_BASE_URL}/favorites/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Bypass-Tunnel-Reminder': 'true'
+            },
+            body: JSON.stringify({ productId })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('API Error (toggleFavorite):', error);
+        return null;
+    }
+};
+
+export const syncFavorites = async (productIds) => {
+    try {
+        const token = localStorage.getItem('customerToken');
+        if (!token) return [];
+        const response = await fetch(`${API_BASE_URL}/favorites/sync`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Bypass-Tunnel-Reminder': 'true'
+            },
+            body: JSON.stringify({ productIds })
+        });
+        if (!response.ok) return [];
+        return await response.json();
+    } catch (error) {
+        console.error('API Error (syncFavorites):', error);
+        return [];
+    }
+};
