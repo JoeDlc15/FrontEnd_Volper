@@ -75,7 +75,7 @@ const ProductCard = ({ product }) => {
                 <Link to={`/producto/${product.id}`} className="mb-4 block flex items-center">
                     <h3
                         ref={titleRef}
-                        className="text-[14px] md:text-[18px] font-black text-slate-900 dark:text-white transition-colors line-clamp-2 leading-tight group-hover:text-primary"
+                        className="text-[14px] md:text-[18px] font-black text-primary dark:text-white transition-colors line-clamp-2 leading-tight"
                         title={product.name}
                         style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
                     >
